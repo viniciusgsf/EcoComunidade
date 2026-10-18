@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f5ee" />
+    <meta name="description"
+        content="Encontre destinos para recicláveis, doe itens e aprenda a descartar resíduos com cuidado." />
+    <title>EcoComunidade — cuidar do bairro começa aqui</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <header class="topbar">
+        <a class="brand" href="#inicio" aria-label="EcoComunidade, página inicial" data-view-link="inicio">
+            <span class="brand-mark" aria-hidden="true">e</span>
+            <span>eco<span class="brand-strong">comunidade</span></span>
+        </a>
+        <nav class="main-nav" aria-label="Navegação principal">
+            <button class="nav-link is-active" type="button" data-view-link="inicio" aria-current="page">Início</button>
+            <button class="nav-link" type="button" data-view-link="pontos">Pontos de coleta</button>
+            <button class="nav-link" type="button" data-view-link="mural">Mural de trocas</button>
+            <button class="nav-link" type="button" data-view-link="guia">Guia rápido</button>
+            <button class="nav-link moderator-nav" type="button" data-view-link="moderacao" hidden>Moderação</button>
+        </nav>
+        <div class="account-controls" id="account-controls">
+            <button class="account-action" type="button" data-auth-open="login">Entrar</button>
+            <button class="account-action account-action-primary" type="button" data-auth-open="register">Criar conta</button>
+            <span class="account-name" id="account-name" hidden></span>
+            <button class="account-action" id="logout-button" type="button" hidden>Sair</button>
+        </div>
+        <a class="topbar-help" href="#guia" data-view-link="guia">Como descartar?</a>
+    </header>
+
+    <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+        <div class="auth-dialog-heading">
+            <div><p class="eyebrow muted">EcoComunidade</p><h2 id="auth-title">Entre na sua conta</h2></div>
+            <button class="dialog-close" type="button" aria-label="Fechar" data-auth-close>×</button>
+        </div>
+        <form class="auth-form" id="login-form">
+            <label>E-mail<input name="email" type="email" required maxlength="254" autocomplete="email" /></label>
+            <label>Senha<input name="password" type="password" required maxlength="128" autocomplete="current-password" /></label>
+            <button class="button button-dark" type="submit">Entrar <span aria-hidden="true">→</span></button>
+            <p class="auth-switch">Ainda não tem conta? <button type="button" data-auth-open="register">Criar uma conta</button></p>
+        </form>
+        <form class="auth-form" id="register-form" hidden>
+            <label>Seu nome<input name="name" required minlength="2" maxlength="80" autocomplete="name" /></label>
+            <label>E-mail<input name="email" type="email" required maxlength="254" autocomplete="email" /></label>
+            <label>Senha<input name="password" type="password" required minlength="12" maxlength="128" autocomplete="new-password" aria-describedby="password-help" /></label>
+            <span id="password-help" class="field-help">Use pelo menos 12 caracteres. Não reutilize uma senha importante.</span>
+            <button class="button button-dark" type="submit">Criar conta <span aria-hidden="true">→</span></button>
+            <p class="auth-switch">Já tem uma conta? <button type="button" data-auth-open="login">Entrar</button></p>
+        </form>
+        <p class="form-status" id="auth-status" role="status" aria-live="polite"></p>
+        <p class="auth-privacy">Sua senha é armazenada como hash. Nunca compartilhe sua senha com outras pessoas.</p>
+    </dialog>
+
+    <main id="conteudo">
+        <section class="view is-visible" id="inicio" aria-labelledby="welcome-title">
+            <div class="hero">
+                <div class="hero-copy">
+                    <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Pequenas atitudes, bairro
+                        melhor</p>
+                    <h1 id="welcome-title">Cuidar do bairro<br />começa <em>por aqui.</em></h1>
+                    <p class="hero-description">Encontre onde entregar seus resíduos, dê um novo destino ao que você não
+                        usa e compartilhe cuidado com a comunidade.</p>
+                    <button class="button button-dark" type="button" data-view-link="pontos">Encontrar um ponto <span
+                            aria-hidden="true">→</span></button>
+                    <div class="hero-note"><span class="note-icon" aria-hidden="true">✳</span><span>Informação simples
+                            para escolhas mais conscientes.</span></div>
+                </div>
+                <div class="hero-art"
+                    aria-label="Ilustração de uma planta crescendo em um vaso feito de material reutilizado" role="img">
+                    <div class="sun"></div>
+                    <div class="art-label">recomeçar<br />faz bem <span aria-hidden="true">↗</span></div>
+                    <div class="plant plant-left"><i></i><i></i><i></i><b></b></div>
+                    <div class="plant plant-right"><i></i><i></i><i></i><b></b></div>
+                    <div class="pot"><span>novo<br />ciclo</span></div>
+                    <div class="ground-line"></div>
+                    <span class="art-spark spark-one" aria-hidden="true">✳</span>
+                    <span class="art-spark spark-two" aria-hidden="true">✦</span>
+                </div>
+            </div>
+
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow muted">O que você precisa hoje?</p>
+                    <h2>Um bom começo é simples.</h2>
+                </div>
+                <span class="heading-caption">Escolha uma opção para continuar <span aria-hidden="true">↓</span></span>
+            </div>
+            <div class="action-grid">
+                <button class="action-card card-olive" type="button" data-view-link="pontos">
+                    <span class="card-icon" aria-hidden="true">⌖</span><span class="card-arrow"
+                        aria-hidden="true">↗</span>
+                    <span class="card-title">Achar um ponto<br />de coleta</span><span class="card-caption">Óleo,
+                        entulho e parceiros</span>
+                </button>
+                <button class="action-card card-clay" type="button" data-view-link="mural">
+                    <span class="card-icon" aria-hidden="true">↗</span><span class="card-arrow"
+                        aria-hidden="true">↗</span>
+                    <span class="card-title">Doar ou trocar<br />um objeto</span><span class="card-caption">O que não
+                        serve pra você pode ajudar alguém</span>
+                </button>
+                <button class="action-card card-cream" type="button" data-view-link="guia">
+                    <span class="card-icon" aria-hidden="true">✳</span><span class="card-arrow"
+                        aria-hidden="true">↗</span>
+                    <span class="card-title">Aprender a<br />descartar</span><span class="card-caption">Dicas rápidas,
+                        sem complicação</span>
+                </button>
+            </div>
+            <footer class="home-footer"><span>Feito com cuidado, para a comunidade.</span><span>Reutilizar é dar mais
+                    uma chance. <b aria-hidden="true">✳</b></span></footer>
+        </section>
+
+        <section class="view content-view" id="pontos" aria-labelledby="points-title" hidden>
+            <button class="back-link" type="button" data-view-link="inicio">← Voltar ao início</button>
+            <p class="eyebrow muted">Descarte consciente</p>
+            <h1 id="points-title">Pontos de coleta</h1>
+            <p class="view-intro">Encontre locais confirmados que recebem seus resíduos. Permita o acesso à localização para ordenar os pontos mais próximos primeiro. As distâncias são estimativas em linha reta, não rotas de rua.</p>
+            <div class="location-panel">
+                <span class="empty-icon" aria-hidden="true">⌖</span>
+                <div class="location-copy"><h2>Encontre pontos perto de você.</h2><p>Sua localização é usada apenas neste aparelho para calcular distâncias. Ela não é enviada nem salva. Alguns endereços podem não ter coordenadas suficientes para estimar a distância.</p></div>
+                <button class="button button-dark" id="locate-button" type="button">Usar minha localização <span aria-hidden="true">→</span></button>
+            </div>
+            <p class="location-status" id="location-status" role="status" aria-live="polite">Ative a localização para ver os pontos mais próximos.</p>
+            <div class="points-toolbar">
+                <h2>Pontos de recebimento</h2>
+                <label>Tipo de resíduo<select id="points-filter">
+                    <option value="">Todos os resíduos</option>
+                    <option value="Óleo de cozinha">Óleo de cozinha</option>
+                    <option value="Entulho">Entulho e restos de obra</option>
+                    <option value="Recicláveis">Recicláveis</option>
+                </select></label>
+            </div>
+            <div class="points-list" id="points-list" aria-live="polite"></div>
+            <p class="map-attribution">Coordenadas cartográficas: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>.</p>
+            <div class="empty-state points-empty" id="points-empty"><span class="empty-icon" aria-hidden="true">⌖</span>
+                <h2>Nenhum ponto confirmado por aqui ainda.</h2>
+                <p>Estamos adicionando locais com endereço e horários verificados. Consulte a prefeitura enquanto isso.</p><span class="data-badge">Exibimos apenas locais verificados</span>
+            </div>
+        </section>
+
+        <section class="view content-view" id="moderacao" aria-labelledby="moderation-title" hidden>
+            <button class="back-link" type="button" data-view-link="inicio">← Voltar ao início</button>
+            <p class="eyebrow muted">Área da comunidade</p>
+            <h1 id="moderation-title">Moderação</h1>
+            <p class="view-intro">Revise os anúncios antes de publicá-los e acompanhe as denúncias recebidas.</p>
+            <div class="moderation-toolbar"><p id="moderation-status" role="status" aria-live="polite"></p><button class="button button-dark" id="refresh-moderation" type="button">Atualizar fila</button></div>
+            <div class="moderation-columns">
+                <section aria-labelledby="pending-title">
+                    <div class="moderation-section-heading"><h2 id="pending-title">Aguardando revisão</h2><span id="pending-count" class="data-badge">0</span></div>
+                    <div id="pending-list" class="moderation-list"></div>
+                    <div id="pending-empty" class="empty-state moderation-empty"><h2>Nenhum anúncio pendente.</h2><p>Novos anúncios enviados para revisão aparecerão aqui.</p></div>
+                </section>
+                <section aria-labelledby="reports-title">
+                    <div class="moderation-section-heading"><h2 id="reports-title">Denúncias</h2><span id="reports-count" class="data-badge">0</span></div>
+                    <div id="reports-list" class="moderation-list"></div>
+                    <div id="reports-empty" class="empty-state moderation-empty"><h2>Nenhuma denúncia aberta.</h2><p>Denúncias de anúncios aprovados aparecerão aqui.</p></div>
+                </section>
+            </div>
+        </section>
+
+        <section class="view content-view" id="mural" aria-labelledby="mural-title" hidden>
+            <button class="back-link" type="button" data-view-link="inicio">← Voltar ao início</button>
+            <p class="eyebrow muted">Reuso entre vizinhos</p>
+            <h1 id="mural-title">Mural de trocas</h1>
+            <p class="view-intro">Ofereça algo em bom estado para que outra pessoa possa reutilizar. Novos anúncios são
+                revisados antes de ficarem visíveis para a comunidade.</p>
+            <div class="auth-required" id="posting-gate">
+                <span class="empty-icon" aria-hidden="true">♙</span>
+                <div><h2>Entre para publicar um item.</h2><p>Anúncios são enviados para revisão antes de aparecerem no mural.</p></div>
+                <div class="posting-auth-actions"><button class="button button-dark" type="button" data-auth-open="login">Entrar</button><button class="text-button" type="button" data-auth-open="register">Criar conta</button></div>
+            </div>
+            <details class="publish-panel" id="publish-panel" hidden>
+                <summary><span class="add-symbol" aria-hidden="true">＋</span><span><strong>Publicar um
+                            item</strong><small>Preencha os campos para oferecer uma doação ou troca</small></span>
+                </summary>
+                <form id="listing-form" class="listing-form">
+                    <label>O que você está oferecendo?<input name="title" required maxlength="70" autocomplete="off"
+                            placeholder="Ex.: cadeira de madeira" /></label>
+                    <label>Categoria<select name="category" required>
+                            <option value="">Escolha uma categoria</option>
+                            <option value="Móveis">Móveis</option>
+                            <option value="Sobras de obras">Sobras de obras</option>
+                            <option value="Utilidades">Outros / utilidades</option>
+                        </select></label>
+                    <label>Bairro ou região<input name="neighborhood" required maxlength="60"
+                            autocomplete="address-level3" placeholder="Ex.: Centro" /></label>
+                    <label>Descrição<textarea name="description" required maxlength="300" rows="3"
+                            placeholder="Conte brevemente sobre o estado do item e como retirar"></textarea></label>
+                    <label>WhatsApp com código do país<input name="phone" type="tel" inputmode="tel" required
+                            maxlength="20" autocomplete="tel" placeholder="Ex.: 5511999999999"
+                            aria-describedby="phone-help" /></label>
+                    <span id="phone-help" class="field-help">Seu número só ficará visível se o anúncio for aprovado.
+                        Inclua o código do país.</span>
+                    <label>Foto (opcional)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"
+                            aria-describedby="photo-help" /></label>
+                    <span id="photo-help" class="field-help">JPG, PNG ou WebP; até 500 KB. A foto será armazenada com
+                        o anúncio.</span>
+                    <button class="button button-dark" type="submit">Publicar anúncio <span
+                            aria-hidden="true">→</span></button>
+                </form>
+            </details>
+            <p class="form-status listing-status" id="listing-status" role="status" aria-live="polite"></p>
+            <div class="listing-toolbar">
+                <h2>Anúncios da comunidade</h2><label>Filtrar por categoria<select id="category-filter">
+                        <option value="">Todas as categorias</option>
+                        <option value="Móveis">Móveis</option>
+                        <option value="Sobras de obras">Sobras de obras</option>
+                        <option value="Utilidades">Outros / utilidades</option>
+                    </select></label>
+            </div>
+            <div class="idea-grid" id="listing-grid" aria-live="polite"></div>
+            <div class="empty-state listing-empty" id="listing-empty"><span class="empty-icon"
+                    aria-hidden="true">↗</span>
+                <h2>Ainda não há anúncios.</h2>
+                <p>Se você tem algo em bom estado, publique o primeiro item para dar a ele um novo destino.</p>
+            </div>
+        </section>
+
+        <section class="view content-view" id="guia" aria-labelledby="guide-title" hidden>
+            <button class="back-link" type="button" data-view-link="inicio">← Voltar ao início</button>
+            <p class="eyebrow muted">Sem complicação</p>
+            <h1 id="guide-title">Guia rápido de descarte</h1>
+            <p class="view-intro">Alguns cuidados ajudam a manter a casa e o bairro mais limpos. Siga sempre as
+                orientações do serviço de coleta da sua região.</p>
+            <div class="guide-list">
+                <article class="guide-item"><span class="guide-number">01</span>
+                    <div>
+                        <p class="idea-tag">Óleo de cozinha</p>
+                        <h2>Espere esfriar e guarde em uma garrafa bem fechada.</h2>
+                        <p>Não despeje óleo na pia ou no ralo. Procure um ponto de recebimento confirmado na sua região.
+                        </p>
+                    </div><span class="guide-doodle" aria-hidden="true">◌</span>
+                </article>
+                <article class="guide-item"><span class="guide-number">02</span>
+                    <div>
+                        <p class="idea-tag">Entulho e restos de obra</p>
+                        <h2>Separe os materiais e evite deixar resíduos na calçada.</h2>
+                        <p>Consulte a prefeitura ou o serviço local para saber os limites, horários e locais corretos de
+                            entrega.</p>
+                    </div><span class="guide-doodle" aria-hidden="true">▧</span>
+                </article>
+                <article class="guide-item"><span class="guide-number">03</span>
+                    <div>
+                        <p class="idea-tag">Antes de jogar fora</p>
+                        <h2>Veja se alguém pode reutilizar ou consertar.</h2>
+                        <p>Móveis e materiais em condições de uso podem ser doados ou trocados com outras pessoas.</p>
+                    </div><span class="guide-doodle" aria-hidden="true">↗</span>
+                </article>
+            </div>
+            <p class="guide-disclaimer">As regras de coleta variam de cidade para cidade. Confirme as orientações com o
+                serviço municipal.</p>
+        </section>
+    </main>
+</body>
+
+</html>

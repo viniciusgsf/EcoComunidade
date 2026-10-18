@@ -528,7 +528,7 @@ if (listingForm) {
             listingForm.reset();
             categoryFilter.value = '';
             await renderListings();
-            listingStatus.textContent = 'Anúncio enviado para revisão. Ele aparecerá no mural quando aprovado.';
+            listingStatus.textContent = 'Recebemos seu anúncio. Ele ficará visível no mural depois que um moderador aprovar.';
         } catch (error) {
             listingStatus.textContent = error.message || 'Não foi possível conectar ao servidor.';
         }

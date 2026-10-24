@@ -284,7 +284,8 @@ function validListing(body) {
       && String(body.description).trim().length <= 300
       && categories.includes(body.category)
       && phone.length >= 10 && phone.length <= 15
-      && (!body.photo || /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(body.photo)),
+      && (!body.photo || (body.photo.length <= 480 * 1024
+        && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(body.photo))),
   };
 }
 
@@ -430,4 +431,11 @@ app.delete('/api/moderation/reports/:id', moderate, async (req, res) => {
 });
 
 app.use(express.static(frontDirectory));
+app.use((error, _req, res, _next) => {
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'A solicitação é grande demais. Tente uma foto menor.' });
+  }
+  console.error('Unhandled request error:', error.message);
+  res.status(500).json({ error: 'Ocorreu um erro ao processar a solicitação.' });
+});
 app.listen(port, () => console.log(`EcoComunidade is listening on http://localhost:${port}`));

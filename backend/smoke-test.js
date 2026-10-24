@@ -104,6 +104,7 @@ const created = await request('/api/listings', {
     neighborhood: 'Test neighborhood',
     description: 'Automated integration test; not a real offer.',
     phone: '5511999999999',
+    photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==',
   }),
 });
 assert.equal(created.response.status, 201, `Create listing failed: ${JSON.stringify(created.body)}`);
@@ -117,8 +118,10 @@ console.log('PASS: authenticated listing is stored as pending moderation');
 
   const queue = await request('/api/moderation/listings', { headers: moderatorHeaders });
   assert.equal(queue.response.status, 200, `Moderation queue failed: ${JSON.stringify(queue.body)}`);
-  assert.equal(queue.body.some((item) => item.id === listingId), true);
-  console.log('PASS: only authorized moderator can access pending listings');
+  const queuedListing = queue.body.find((item) => item.id === listingId);
+  assert.ok(queuedListing, 'Listing missing from moderator queue');
+  assert.ok(queuedListing.photo?.startsWith('data:image/jpeg;base64,'), 'Listing photo was not stored');
+  console.log('PASS: only authorized moderator can access pending listings and its photo');
 
   const approved = await request(`/api/moderation/listings/${listingId}`, {
     method: 'PATCH', headers: moderatorHeaders, body: JSON.stringify({ status: 'approved' }),

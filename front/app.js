@@ -22,6 +22,13 @@ const logoutButton = document.querySelector('#logout-button');
 let currentUser = null;
 let currentCoordinates = null;
 
+const API_BASE_URL = (window.ECO_API_BASE_URL || '').replace(/\/+$/, '');
+
+function apiUrl(path) {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${API_BASE_URL}${normalizedPath}`;
+}
+
 function updateAuthUI(user) {
     currentUser = user;
     document.querySelectorAll('[data-auth-open="login"]').forEach((button) => { button.hidden = Boolean(user); });
@@ -110,7 +117,7 @@ logoutButton.addEventListener('click', async () => {
 
 async function restoreSession() {
     try {
-        const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+        const response = await fetch(apiUrl('/api/auth/session'), { credentials: 'include' });
         const result = await response.json();
         if (response.ok) updateAuthUI(result.user);
     } catch {
@@ -470,6 +477,59 @@ document.querySelector('#refresh-moderation').addEventListener('click', () => { 
 locateButton.addEventListener('click', locateNearbyPoints);
 pointsFilter.addEventListener('change', () => { void loadCollectionPoints(); });
 
+async function prepareListingPhoto(file) {
+    if (!file || !file.size) return '';
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        throw new Error('Escolha uma foto JPG, PNG ou WebP.');
+    }
+    if (file.size > 15 * 1024 * 1024) {
+        throw new Error('A foto precisa ter menos de 15 MB. Escolha uma imagem menor.');
+    }
+    if (typeof createImageBitmap !== 'function') {
+        throw new Error('Este navegador não conseguiu preparar a foto. Tente uma imagem menor ou publique sem foto.');
+    }
+
+    let image;
+    try {
+        image = await createImageBitmap(file);
+        const maxDimension = 1280;
+        const originalScale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+
+        for (const scaleFactor of [1, 0.8, 0.64]) {
+            const scale = originalScale * scaleFactor;
+            canvas.width = Math.max(1, Math.round(image.width * scale));
+            canvas.height = Math.max(1, Math.round(image.height * scale));
+            const context = canvas.getContext('2d');
+            if (!context) throw new Error('Não foi possível preparar a foto. Você ainda pode publicar sem ela.');
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            for (const quality of [0.82, 0.72, 0.62]) {
+                const compressed = await new Promise((resolve, reject) => {
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error('Não foi possível comprimir a foto. Você ainda pode publicar sem ela.'));
+                    }, 'image/jpeg', quality);
+                });
+                if (compressed.size <= 350 * 1024) {
+                    return await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.addEventListener('load', () => resolve(String(reader.result)));
+                        reader.addEventListener('error', () => reject(new Error('Não foi possível ler a foto. Tente novamente.')));
+                        reader.readAsDataURL(compressed);
+                    });
+                }
+            }
+        }
+        throw new Error('Não foi possível reduzir essa foto o suficiente. Tente outra foto ou publique sem ela.');
+    } catch (error) {
+        if (error instanceof Error && error.message) throw error;
+        throw new Error('Não foi possível abrir essa foto. Tente JPG, PNG ou WebP, ou publique sem foto.');
+    } finally {
+        image?.close();
+    }
+}
+
 if (listingForm) {
     listingForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -484,28 +544,11 @@ if (listingForm) {
         }
 
         const imageFile = formData.get('photo');
-        if (imageFile.size > 500 * 1024) {
-            listingStatus.textContent = 'A foto deve ter no máximo 500 KB.';
-            listingForm.elements.photo.focus();
-            return;
-        }
-
+        const submitButton = listingForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
         let photo = '';
-        if (imageFile.size > 0) {
-            try {
-                photo = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.addEventListener('load', () => resolve(String(reader.result)));
-                    reader.addEventListener('error', () => reject(new Error('Não foi possível ler a foto. Tente outra imagem.')));
-                    reader.readAsDataURL(imageFile);
-                });
-            } catch (error) {
-                listingStatus.textContent = error.message;
-                return;
-            }
-        }
-
         try {
+            photo = await prepareListingPhoto(imageFile);
             const response = await fetch('/api/listings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -531,6 +574,8 @@ if (listingForm) {
             listingStatus.textContent = 'Recebemos seu anúncio. Ele ficará visível no mural depois que um moderador aprovar.';
         } catch (error) {
             listingStatus.textContent = error.message || 'Não foi possível conectar ao servidor.';
+        } finally {
+            submitButton.disabled = false;
         }
     });
 }

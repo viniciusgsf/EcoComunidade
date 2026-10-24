@@ -68,10 +68,10 @@ async function submitAuth(form, endpoint) {
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
     try {
-        const response = await fetch(endpoint, {
+        const response = await fetch(apiUrl(endpoint), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
+            credentials: 'include',
             body: JSON.stringify(Object.fromEntries(new FormData(form))),
         });
         const result = response.status === 204 ? {} : await response.json();
@@ -100,7 +100,7 @@ registerForm.addEventListener('submit', (event) => {
 logoutButton.addEventListener('click', async () => {
     logoutButton.disabled = true;
     try {
-        const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+        const response = await fetch(apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' });
         if (!response.ok) {
             const result = await response.json();
             throw new Error(result.error || 'Não foi possível sair da conta.');
@@ -149,7 +149,7 @@ async function loadCollectionPoints() {
 
     const query = selectedCategory ? `?category=${encodeURIComponent(selectedCategory)}` : '';
     try {
-        const response = await fetch(`/api/collection-points${query}`);
+        const response = await fetch(apiUrl(`/api/collection-points${query}`), { credentials: 'include' });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os pontos.');
 
@@ -257,7 +257,7 @@ async function renderListings() {
     const query = selectedCategory ? `?category=${encodeURIComponent(selectedCategory)}` : '';
     let listings;
     try {
-        const response = await fetch(`/api/listings${query}`);
+        const response = await fetch(apiUrl(`/api/listings${query}`), { credentials: 'include' });
         if (!response.ok) throw new Error('A resposta do servidor não foi válida.');
         listings = await response.json();
     } catch {
@@ -303,7 +303,8 @@ async function renderListings() {
             const reason = window.prompt('Por que você está denunciando este anúncio?');
             if (!reason) return;
             try {
-                const response = await fetch(`/api/listings/${listing.id}/reports`, {
+                const response = await fetch(apiUrl(`/api/listings/${listing.id}/reports`), {
+                    credentials: 'include',
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reason }),
@@ -325,7 +326,7 @@ async function renderListings() {
 }
 
 async function moderationRequest(path, options = {}) {
-    const response = await fetch(path, { ...options, credentials: 'same-origin' });
+    const response = await fetch(path, { ...options, credentials: 'include' });
     const result = response.status === 204 ? null : await response.json();
     if (!response.ok) throw new Error(result?.error || 'Não foi possível concluir a ação.');
     return result;
@@ -549,10 +550,10 @@ if (listingForm) {
         let photo = '';
         try {
             photo = await prepareListingPhoto(imageFile);
-            const response = await fetch('/api/listings', {
+            const response = await fetch(apiUrl('/api/listings'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
+                credentials: 'include',
                 body: JSON.stringify({
                     title: formData.get('title'),
                     category: formData.get('category'),

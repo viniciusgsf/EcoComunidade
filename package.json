@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node --check backend/server.js && node --check backend/smoke-test.js && node --check backend/seed-collection-points.js && node --check front/app.js",
-    "start": "node --env-file=.env.local backend/server.js",
+    "start": "node backend/server.js",
     "test:e2e": "node --env-file=.env.local backend/smoke-test.js",
     "seed:collection-points": "node --env-file=.env.local backend/seed-collection-points.js"
   },

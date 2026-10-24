@@ -16,6 +16,27 @@ const sessionDurationSeconds = 60 * 60 * 24 * 7;
 
 app.disable('x-powered-by');
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// Configure FRONTEND_ORIGIN in Render, e.g. https://viniciusgsf.github.io
+const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim().replace(/\/$/, '');
+
+app.use((req, res, next) => {
+  const origin = req.get('origin');
+  if (origin && frontendOrigin && origin === frontendOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', frontendOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  }
+
+  if (req.method === 'OPTIONS') {
+    if (origin && frontendOrigin && origin !== frontendOrigin) return res.status(403).end();
+    return res.status(204).end();
+  }
+  next();
+});
+
 app.use(express.json({ limit: '700kb' }));
 app.use('/api/', rateLimit({ windowMs: 60_000, limit: 40, standardHeaders: 'draft-8', legacyHeaders: false }));
 app.use('/api/auth/', rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false }));
@@ -25,7 +46,10 @@ function requireSameOrigin(req, res, next) {
   if (!origin) return res.status(403).json({ error: 'Origem da solicitação não verificada.' });
   try {
     const parsedOrigin = new URL(origin);
-    if (!['http:', 'https:'].includes(parsedOrigin.protocol) || parsedOrigin.host !== req.get('host')) {
+    const sameBackendOrigin = ['http:', 'https:'].includes(parsedOrigin.protocol)
+      && parsedOrigin.host === req.get('host');
+    const allowedFrontendOrigin = Boolean(frontendOrigin) && origin === frontendOrigin;
+    if (!sameBackendOrigin && !allowedFrontendOrigin) {
       return res.status(403).json({ error: 'Origem da solicitação não permitida.' });
     }
   } catch {
@@ -67,14 +91,18 @@ async function verifyPassword(password, storedHash) {
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
+function sessionCookieAttributes() {
+  // GitHub Pages and Render are cross-site. SameSite=None requires Secure.
+  const crossSite = Boolean(frontendOrigin) && process.env.NODE_ENV === 'production';
+  return crossSite ? '; SameSite=None; Secure' : `; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+}
+
 function setSessionCookie(res, token) {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  res.setHeader('Set-Cookie', `${sessionCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${sessionDurationSeconds}${secure}`);
+  res.setHeader('Set-Cookie', `${sessionCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly${sessionCookieAttributes()}; Max-Age=${sessionDurationSeconds}`);
 }
 
 function clearSessionCookie(res) {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  res.setHeader('Set-Cookie', `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);
+  res.setHeader('Set-Cookie', `${sessionCookieName}=; Path=/; HttpOnly${sessionCookieAttributes()}; Max-Age=0`);
 }
 
 async function createSession(user, res) {
